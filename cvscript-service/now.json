@@ -1,0 +1,11 @@
+{
+    "type": "docker",
+    "name": "careerlyft-cvscript",
+    "alias": [
+        "careerlyft-cvscript",
+        "career-lyft-cvscript"
+    ],
+    "env": {
+        "DATABASE_URL": "postgres://careerlyft:postgres@ci.tuteria.com:5522/careerlyft"
+     }
+}

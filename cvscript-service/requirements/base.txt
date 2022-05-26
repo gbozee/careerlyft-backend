@@ -1,0 +1,12 @@
+django
+django-environ
+google-api-python-client
+openpyxl==2.5.0
+-e git+https://gbozee:abiola2321@gitlab.com/careerlyft-team/careerlyft-shared.git#egg=cv_utils
+psycopg2-binary
+django-cors-headers
+django-redis==4.8.0
+requests==2.18.4
+cloudinary==1.12.0
+django-extensions
+oauth2client==4.1.3

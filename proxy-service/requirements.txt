@@ -1,0 +1,2 @@
+-e git+https://gbozee:abiola2321@gitlab.com/careerlyft-team/careerlyft-shared.git#egg=cv_utils
+aiohttp

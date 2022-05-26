@@ -1,0 +1,6 @@
+-r base.txt
+
+# psycopg2>=2.7,<2.8 --no-binary psycopg2
+gunicorn
+ujson
+raven

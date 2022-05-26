@@ -1,0 +1,17 @@
+{
+  "name": "link-shortener",
+  "alias": "link-shortener",
+  "version": 2,
+  "builds": [{ "src": "api/index.js", "use": "@now/node-server" }],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "api/index.js",
+      "headers": {
+        "access-control-allow-origin": "*",
+        "access-control-allow-headers": "origin, x-requested-with, content-type, accept",
+        "access-control-allow-methods": "get, post, patch, delete, options"
+      }
+    }
+  ]
+}

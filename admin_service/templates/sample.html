@@ -1,0 +1,18 @@
+{% load paystack %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Sample payment page</title>
+    <style>
+        .red{
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    {% paystack_button ref="ELVYIJJV1RED" button_class="red" amount=950.40 email="gbozee@example.com" currency="usd" plan="PLN_zu5rpe1drvdf14t" redirect_url="http://localhost:8007/v2/paystack/verify-payment/EMRHUGTL0FJN/?amount=95040&plan=Pro&kind=agent" %}
+</body>
+</html>

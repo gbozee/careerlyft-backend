@@ -1,0 +1,4 @@
+-r local.txt
+
+pytest-asyncio==0.8.0
+pytest-django==3.2.1

@@ -1,0 +1,13 @@
+{
+    "type": "docker",
+    "name": "careerlyft-authentication",
+    "alias": [
+        "careerlyft-authentication",
+        "career-lyft-authentication"
+    ],
+    "env": {
+        "DATABASE_URL": "postgres://careerlyft:postgres@ci.tuteria.com:5522/careerlyft",
+        "CLIENT_URL": "",
+        "CLIENT_PASSWORD_URL":""
+    }
+}

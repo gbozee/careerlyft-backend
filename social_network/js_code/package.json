@@ -1,0 +1,11 @@
+{
+  "name": "js_code",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "hellojs": "^1.16.1",
+    "react": "^16.2.0",
+    "react-dom": "^16.2.0"
+  }
+}

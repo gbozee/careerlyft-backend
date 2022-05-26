@@ -1,0 +1,38 @@
+{
+  "name": "oauth-shim",
+  "version": "1.1.1",
+  "description": "OAuth2 shim for OAuth1 services, works with the clientside library HelloJS",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha test/**/*.js",
+    "server": "cross-env PORT=4000 nodemon example.js",
+    "start": "node example.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com/MrSwitch/node-oauth-shim"
+  },
+  "keywords": [
+    "oauth",
+    "oauth-proxy",
+    "oauth-shim",
+    "rest"
+  ],
+  "author": "Andrew Dodson <andrewjdodson@gmail.com>",
+  "license": "BSD",
+  "bugs": {
+    "url": "https://github.com/MrSwitch/node-oauth-shim/issues"
+  },
+  "devDependencies": {
+    "connect": "*",
+    "cross-env": "^5.1.3",
+    "expect.js": "*",
+    "express": "*",
+    "mocha": "*",
+    "sinon": "*",
+    "supertest": "*"
+  },
+  "dependencies": {
+    "nodemon": "^1.17.1"
+  }
+}

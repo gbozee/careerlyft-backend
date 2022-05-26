@@ -1,0 +1,142 @@
+stages:
+  - test
+  - build
+  - deploy
+  - deploy-prod
+
+variables:
+  CONTAINER_CVSCRIPT_IMAGE: registry.gitlab.com/careerlyft-team/cv-script-microservice/cvscript
+  CONTAINER_AUTHENTICATION_IMAGE: registry.gitlab.com/careerlyft-team/cv-script-microservice/authentication
+  CONTAINER_CV_PROFILE_NAME: registry.gitlab.com/careerlyft-team/cv-script-microservice/cv_profile
+  CONTAINER_PAYMENT_IMAGE: registry.gitlab.com/careerlyft-team/cv-script-microservice/payment
+  CONTAINER_ADMIN_IMAGE: registry.gitlab.com/careerlyft-team/cv-script-microservice/admin-service
+  # CONTAINER_PDF_IMAGE: registry.gitlab.com/careerlyft-team/cv-script-microservice/html_to_pdf
+  CONTAINER_BACKGROUND: registry.gitlab.com/careerlyft-team/cv-script-microservice/background
+  CONTAINER_PROXY: registry.gitlab.com/careerlyft-team/cv-script-microservice/proxy
+test:
+  stage: test
+  image: python:3.6
+  services:
+    - redis
+  script:
+    - python -m pip install -r cvscript-service/requirements/local.txt
+    - python -m pip install -r authentication_service/requirements/local.txt
+    - python -m pip install -r cv_service/requirements/local.txt
+    - python -m pip install -r payment_service/requirements/local.txt
+    - export DATABASE_URL=postgres://careerlyft:postgres@backup.tuteria.com:5522/careerlyft
+    - export CACHE_URL=redis://backup.tuteria.com:6379/1
+    - python cvscript-service/manage.py migrate
+    - python authentication_service/manage.py migrate
+    - python cv_service/manage.py migrate
+    - python payment_service/manage.py migrate
+    - python cvscript-service/manage.py test django_app --no-input
+    - pytest authentication_service/
+    - python cv_service/manage.py test registration_service --no-input
+    - pytest payment_service/
+
+  only:
+    - develop
+    - new-pricing
+    - agent-flow
+    # - dev
+
+build:
+  stage: build
+  image: docker:git
+  services:
+    - docker:dind
+  script:
+    - docker login -u gbozee -p abiola2321 registry.gitlab.com
+    - docker build -t $CONTAINER_CVSCRIPT_IMAGE -f cvscript-service/Dockerfile cvscript-service
+    - docker push $CONTAINER_CVSCRIPT_IMAGE:latest
+    - docker build -t $CONTAINER_AUTHENTICATION_IMAGE -f authentication_service/Dockerfile authentication_service
+    - docker push $CONTAINER_AUTHENTICATION_IMAGE:latest
+    - docker build -t $CONTAINER_CV_PROFILE_NAME -f cv_service/Dockerfile cv_service
+    - docker push $CONTAINER_CV_PROFILE_NAME:latest
+    - docker build -t $CONTAINER_PAYMENT_IMAGE -f payment_service/Dockerfile payment_service
+    - docker push $CONTAINER_PAYMENT_IMAGE:latest
+    - docker build -t $CONTAINER_ADMIN_IMAGE -f admin_service/Dockerfile admin_service
+    - docker push $CONTAINER_ADMIN_IMAGE:latest
+    # - docker build -t $CONTAINER_PDF_IMAGE -f html-to-pdf-service/Dockerfile html-to-pdf-service
+    # - docker push $CONTAINER_PDF_IMAGE:latest
+    - docker build -t $CONTAINER_BACKGROUND -f background_service/Dockerfile background_service
+    - docker push $CONTAINER_BACKGROUND:latest
+    # - docker build -t $CONTAINER_PROXY -f proxy-service/Dockerfile proxy-service
+    # - docker push $CONTAINER_PROXY:latest
+
+  only:
+    - master
+    # - dev
+    - upstream/fix
+
+deploy:
+  stage: deploy
+  image: python:2.7
+  before_script:
+    ##
+    ## Install ssh-agent if not already installed, it is required by Docker.
+    ## (change apt-get to yum if you use an RPM-based image)
+    ##
+    - "which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )"
+
+    ##
+    ## Run ssh-agent (inside the build environment)
+    ##
+    - eval $(ssh-agent -s)
+
+    ##
+    ## Add the SSH key stored in SSH_PRIVATE_KEY variable to the agent store
+    ## We're using tr to fix line endings which makes ed25519 keys work
+    ## without extra base64 encoding.
+    ## https://gitlab.com/gitlab-examples/ssh-private-key/issues/1#note_48526556
+    ##
+    - echo "$PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
+
+    ##
+    ## Create the SSH directory and give it the right permissions
+    ##
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+  script:
+    - python -m pip install fabric==1.13.2
+    - fab deploy_current
+    - source deploy.sh $SENTRY_TOKEN `git describe --tags` $CI_COMMIT_SHA staging https://backup.tuteria.com
+  only:
+    - develop
+    - new-pricing
+
+deploy-prod:
+  stage: deploy
+  image: python:2.7
+  before_script:
+    ##
+    ## Install ssh-agent if not already installed, it is required by Docker.
+    ## (change apt-get to yum if you use an RPM-based image)
+    ##
+    - "which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )"
+
+    ##
+    ## Run ssh-agent (inside the build environment)
+    ##
+    - eval $(ssh-agent -s)
+
+    ##
+    ## Add the SSH key stored in SSH_PRIVATE_KEY variable to the agent store
+    ## We're using tr to fix line endings which makes ed25519 keys work
+    ## without extra base64 encoding.
+    ## https://gitlab.com/gitlab-examples/ssh-private-key/issues/1#note_48526556
+    ##
+    - echo "$PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
+
+    ##
+    ## Create the SSH directory and give it the right permissions
+    ##
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+  script:
+    - python -m pip install fabric==1.13.2
+    - fab deploy_production
+    - source deploy.sh $SENTRY_TOKEN `git describe --tags` $CI_COMMIT_SHA production https://backup.tuteria.com
+  only:
+    - upstream/fix
+    - master

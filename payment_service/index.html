@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Payment Service Template</title>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+        crossorigin="anonymous"></script>
+    <style>
+        .section {
+            display: flex;
+        }
+
+        .left,
+        .right {
+            width: 50%;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="section">
+        <div class="left">
+            <div>
+                <button class="share-btn" id="facebook">Share Facebook</button>
+            </div>
+            <div>
+                <button class="share-btn" id="twitter">Share Twitter</button>
+            </div>
+            <div>
+                <button class="share-btn" id="google">Share Linkedin</button>
+            </div>
+
+        </div>
+        <div class="right">
+            <img src="" alt="" id="thumbnail">
+            <div id="order"></div>
+            <strong id="price"></strong>
+            <script src="https://js.paystack.co/v1/inline.js"></script>
+            <button id="paystack">Pay with Paystack</button>
+        </div>
+    </div>
+    <script>
+        var baseUrl="http://localhost:8003"
+        var user_token = 'Token eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoyLCJ1c2VybmFtZSI6ImphbWllMjIyMkBleGFtcGxlLmNvbSIsImV4cCI6MTUyNDE3ODY3MCwiZW1haWwiOiJqYW1pZTIyMjJAZXhhbXBsZS5jb20ifQ.0bzJNw1zQMvZNcLLa0Ivi5hWxwPl65cBqfWytzl8TdE'
+        $('.share-btn').click(function (e) {
+            var network = $(this).attr('id')
+            ajaxCall(baseUrl+"/payment-info?user_details=true",
+                {
+                    type: 'POST', dataType: 'json', data: JSON.stringify({
+                        network: network
+                    })
+                }, (result) => {
+                    debugger;
+                })
+        })
+        function registerButtonEvent(data) {
+            var paystack_details = data.user_details
+            function payWithPaystack() {
+                var handler = PaystackPop.setup({
+                    key: paystack_details.key,
+                    email: paystack_details.email,
+                    amount: parseFloat(data.amount) * 100,
+                    callback: function (response) {
+                        $.ajax({
+                            url: paystack_details.redirect_url + "&trxref=" + response.trxref,
+                            type: 'GET',
+                            dataType: 'json',
+                            headers: {
+                                'Authorization': user_token,
+                            },
+                            contentType: 'application/json; charset=utf-8',
+                            success: function (result) {
+                                debugger;
+                                // CallBack(result);
+                            },
+                            error: function (error) {
+                                console.log(error)
+                            }
+
+                        })
+                    }
+                });
+                handler.openIframe();
+            }
+            $('#paystack').click(function () {
+                payWithPaystack()
+            })
+        }
+        function ajaxCall(url, extra, callback) {
+            let params = Object.assign(extra, {
+                url: url, headers: {
+                    'Authorization': user_token
+                }, contentType: 'application/json charset=utf-8',
+                success: callback
+            })
+            $.ajax(params)
+        }
+        $(document).ready(() => {
+            $.ajax({
+                url: baseUrl+"/payment-info?user_details=true",
+                type: 'GET',
+                dataType: 'json',
+                headers: {
+                    'Authorization': user_token,
+                },
+                contentType: 'application/json; charset=utf-8',
+                success: function (result) {
+                    var networks = result.user_details.networks
+                    $.each($('.share-btn'), function(index,val){
+                        if(networks.includes(val.id)){
+                            $(val).hide()
+                        }
+                    })
+                    $('#thumbnail').attr('src', result.thumbnail)
+                    $('#price').text(`N${result.amount}`)
+                    $('#order').text(`Order: ${result.order}`)
+                    registerButtonEvent(result)
+                    // CallBack(result);
+                },
+                error: function (error) {
+
+                }
+            });
+        })
+    </script>
+</body>
+
+</html>

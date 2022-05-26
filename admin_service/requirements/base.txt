@@ -1,0 +1,11 @@
+django==2.0.7
+django-environ==0.4.5
+psycopg2-binary==2.8.6
+django-cors-headers==2.4.0
+requests==2.18.4
+whitenoise==3.3.1
+git+https://gbozee:abiola2321@gitlab.com/careerlyft-team/careerlyft-shared.git
+django-extensions
+git+https://github.com/gbozee/django-paystack.git@master
+git+https://github.com/gbozee/django-ravepay.git@master
+git+https://github.com/gbozee//django-quickbooks@master

@@ -1,0 +1,3 @@
+[submodule "careerlyft_shared"]
+	path = careerlyft_shared
+	url = https://gbozee:abiola2321@gitlab.com/careerlyft-team/careerlyft-shared.git
